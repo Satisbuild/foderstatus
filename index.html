@@ -3,43 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <title>Foderstatus</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-  body { font-family: Arial; padding: 20px; }
-  h1 { margin-bottom: 20px; }
-  h2 { margin-top: 40px; }
-  table { border-collapse: collapse; width: 350px; margin-bottom: 20px; }
-  td, th { border: 1px solid #ccc; padding: 8px; }
-  th { background: #eee; }
+  body { 
+    font-family: Arial; 
+    padding: 10px; 
+    max-width: 450px; 
+    margin: auto;
+  }
+
+  h1 { 
+    text-align: center; 
+    font-size: 26px; 
+    margin-bottom: 20px; 
+  }
+
+  h2 { 
+    margin-top: 30px; 
+    font-size: 22px; 
+  }
+
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-bottom: 20px; 
+    font-size: 18px;
+  }
+
+  td, th { 
+    border: 1px solid #ccc; 
+    padding: 10px; 
+  }
+
+  th { 
+    background: #eee; 
+  }
+
   .ok { background: #c8f7c5; }
   .not-ok { background: #f7c5c5; }
+
+  select {
+    width: 100%;
+    padding: 6px;
+    font-size: 16px;
+  }
 </style>
 </head>
 <body>
+
+<script>
+  // GLOBALT PASSWORD-FLAG
+  let authorized = false;
+
+  const password = "JulleMus";
+  const userInput = prompt("Indtast adgangskode:");
+
+  if (userInput !== password) {
+    document.body.innerHTML = "<h1>Forkert kode</h1>";
+  } else {
+    authorized = true;
+  }
+</script>
 
 <h1>Foderstatus</h1>
 <div id="output"></div>
 
 <script>
-  
-  const password = "Vinter120"; // skift til din egen kode
+// STOP ALT HVIS PASSWORD ER FORKERT
+if (!authorized) {
+  throw new Error("Ikke autoriseret");
+}
 
-  const userInput = prompt("Indtast adgangskode:");
-
-  if (userInput !== password) {
-    document.body.innerHTML = "<h1>Forkert kode</h1>";
-    throw new Error("Forkert kode");
-  }
-
+const apiURL = "https://script.google.com/macros/s/AKfycbwozjfVVeD4ZEbmPPVCnK2ixLciAczcANYke42_j-PWmPr4UkYm8a-ODP4-hWH9hgzqgw/exec";
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdGPn-TFcWLdSdzcxEecrdwIlcJqYYQQ_BX5txpXojqSQn7zPers_3tFtSS2wWdBPQdADeBua4MFj7/pub?output=csv";
+
+function updateStatus(navn, dag, status, cellElement) {
+  fetch(apiURL, {
+    method: "POST",
+    body: JSON.stringify({ navn, dag, status })
+  })
+  .then(res => res.text())
+  .then(result => {
+    if (result === "OK") {
+      cellElement.textContent = status;
+      cellElement.className = status === "OK" ? "ok" : "not-ok";
+    } else {
+      alert("Fejl: Kunne ikke opdatere i Google Sheets");
+    }
+  });
+}
 
 fetch(sheetURL)
   .then(res => res.text())
   .then(csv => {
     const lines = csv.split("\n").map(l => l.trim()).filter(l => l.length > 0);
-
-    // Automatisk separator-detektion
     const sep = lines[0].includes(";") ? ";" : ",";
-
     const rows = lines.map(r => r.split(sep));
 
     const header = rows[0];
@@ -47,10 +106,10 @@ fetch(sheetURL)
     const carlos = rows[2];
 
     const days = header.slice(1);
-    const kennyStatus = kenny.slice(1);
-    const carlosStatus = carlos.slice(1);
-
-    const persons = { Kenny: kennyStatus, Carlos: carlosStatus };
+    const persons = {
+      Kenny: kenny.slice(1),
+      Carlos: carlos.slice(1)
+    };
 
     const container = document.getElementById("output");
 
@@ -59,15 +118,27 @@ fetch(sheetURL)
       section.innerHTML = `<h2>${person}</h2>`;
 
       const table = document.createElement("table");
-      table.innerHTML = `
-        <tr><th>Dag</th><th>Status</th></tr>
-        ${days.map((day, i) => {
-          const status = (persons[person][i] || "").trim();
-          const cls = status === "OK" ? "ok" : "not-ok";
-          return `<tr><td>${day}</td><td class="${cls}">${status}</td></tr>`;
-        }).join("")}
-      `;
+      let html = `<tr><th>Dag</th><th>Status</th><th>Ændr</th></tr>`;
 
+      days.forEach((day, i) => {
+        const status = persons[person][i].trim();
+        const cls = status === "OK" ? "ok" : "not-ok";
+
+        html += `
+          <tr>
+            <td>${day}</td>
+            <td class="${cls}" id="${person}-${day}">${status}</td>
+            <td>
+              <select onchange="updateStatus('${person}','${day}', this.value, document.getElementById('${person}-${day}'))">
+                <option value="OK" ${status === "OK" ? "selected" : ""}>OK</option>
+                <option value="IKKE OK" ${status === "IKKE OK" ? "selected" : ""}>IKKE OK</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      });
+
+      table.innerHTML = html;
       section.appendChild(table);
       container.appendChild(section);
     });
@@ -76,7 +147,6 @@ fetch(sheetURL)
     document.getElementById("output").innerText = "Der skete en fejl: " + err;
   });
 </script>
-
 
 </body>
 </html>
