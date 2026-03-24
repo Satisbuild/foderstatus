@@ -20,6 +20,16 @@
 <div id="output"></div>
 
 <script>
+  
+  const password = "Vinter120"; // skift til din egen kode
+
+  const userInput = prompt("Indtast adgangskode:");
+
+  if (userInput !== password) {
+    document.body.innerHTML = "<h1>Forkert kode</h1>";
+    throw new Error("Forkert kode");
+  }
+
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdGPn-TFcWLdSdzcxEecrdwIlcJqYYQQ_BX5txpXojqSQn7zPers_3tFtSS2wWdBPQdADeBua4MFj7/pub?output=csv";
 
 fetch(sheetURL)
