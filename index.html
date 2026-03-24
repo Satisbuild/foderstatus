@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<title>Foderstatus</title>
+<style>
+  body { font-family: Arial; padding: 20px; }
+  h1 { margin-bottom: 20px; }
+  h2 { margin-top: 40px; }
+  table { border-collapse: collapse; width: 350px; margin-bottom: 20px; }
+  td, th { border: 1px solid #ccc; padding: 8px; }
+  th { background: #eee; }
+  .ok { background: #c8f7c5; }
+  .not-ok { background: #f7c5c5; }
+</style>
+</head>
+<body>
+
+<h1>Foderstatus</h1>
+<div id="output"></div>
+
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdGPn-TFcWLdSdzcxEecrdwIlcJqYYQQ_BX5txpXojqSQn7zPers_3tFtSS2wWdBPQdADeBua4MFj7/pub?output=csv";
+
+fetch(sheetURL)
+  .then(res => res.text())
+  .then(csv => {
+    const lines = csv.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+
+    // Automatisk separator-detektion
+    const sep = lines[0].includes(";") ? ";" : ",";
+
+    const rows = lines.map(r => r.split(sep));
+
+    const header = rows[0];
+    const kenny = rows[1];
+    const carlos = rows[2];
+
+    const days = header.slice(1);
+    const kennyStatus = kenny.slice(1);
+    const carlosStatus = carlos.slice(1);
+
+    const persons = { Kenny: kennyStatus, Carlos: carlosStatus };
+
+    const container = document.getElementById("output");
+
+    Object.keys(persons).forEach(person => {
+      const section = document.createElement("div");
+      section.innerHTML = `<h2>${person}</h2>`;
+
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <tr><th>Dag</th><th>Status</th></tr>
+        ${days.map((day, i) => {
+          const status = (persons[person][i] || "").trim();
+          const cls = status === "OK" ? "ok" : "not-ok";
+          return `<tr><td>${day}</td><td class="${cls}">${status}</td></tr>`;
+        }).join("")}
+      `;
+
+      section.appendChild(table);
+      container.appendChild(section);
+    });
+  })
+  .catch(err => {
+    document.getElementById("output").innerText = "Der skete en fejl: " + err;
+  });
+</script>
+
+
+</body>
+</html>
