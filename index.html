@@ -5,97 +5,161 @@
 <title>Foderstatus</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
-  body { 
-    font-family: Arial; 
-    padding: 10px; 
-    max-width: 450px; 
-    margin: auto;
-  }
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --accent: #38bdf8;
+  --ok: #22c55e;
+  --not-ok: #ef4444;
+  --text: #e2e8f0;
+}
 
-  h1 { 
-    text-align: center; 
-    font-size: 26px; 
-    margin-bottom: 20px; 
-  }
+* {
+  box-sizing: border-box;
+}
 
-  h2 { 
-    margin-top: 30px; 
-    font-size: 22px; 
-  }
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, #0f172a, #020617);
+  color: var(--text);
+  padding: 20px;
+}
 
-  table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    margin-bottom: 20px; 
-    font-size: 18px;
-  }
+h1 {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
 
-  td, th { 
-    border: 1px solid #ccc; 
-    padding: 10px; 
-  }
+.topbar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 
-  th { 
-    background: #eee; 
-  }
+button {
+  background: var(--accent);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  color: black;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
 
-  .ok { background: #c8f7c5; }
-  .not-ok { background: #f7c5c5; }
+button:hover {
+  transform: scale(1.05);
+}
 
-  select {
-    width: 100%;
-    padding: 6px;
-    font-size: 16px;
-  }
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td, th {
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+tr {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.status {
+  font-weight: 600;
+  border-radius: 8px;
+  text-align: center;
+  padding: 6px;
+}
+
+.ok {
+  background: rgba(34,197,94,0.2);
+  color: var(--ok);
+}
+
+.not-ok {
+  background: rgba(239,68,68,0.2);
+  color: var(--not-ok);
+}
+
+select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  background: #020617;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+}
+
+select:hover {
+  border-color: var(--accent);
+}
+
+.loading {
+  text-align: center;
+  opacity: 0.7;
+  margin-top: 40px;
+}
 </style>
 </head>
+
 <body>
 
 <script>
-  // GLOBALT PASSWORD-FLAG
-  let authorized = false;
+let authorized = false;
+const password = "JulleMus";
+const userInput = prompt("Indtast adgangskode:");
 
-  const password = "JulleMus";
-  const userInput = prompt("Indtast adgangskode:");
-
-  if (userInput !== password) {
-    document.body.innerHTML = "<h1>Forkert kode</h1>";
-  } else {
-    authorized = true;
-  }
-</script>
-<!-- Placer dette lige under <h1>Foderstatus</h1> -->
-<button id="refreshBtn" onclick="refreshPage()" style="display:none; margin-bottom:12px; padding:8px 12px; font-size:16px;">
-  Opdater siden
-</button>
-
-<script>
-  // Vis knappen kun hvis autoriseret
-  if (authorized) {
-    document.getElementById('refreshBtn').style.display = 'inline-block';
-  }
-
-  // Funktion til at genindlæse siden
-  function refreshPage() {
-    // Simpel genindlæsning
-    location.reload();
-    // Alternativt: force reload fra server (cache bypass)
-    // location.reload(true); // ikke anbefalet i moderne browsere
-  }
-</script>
-
-<h1>Foderstatus</h1>
-<div id="output"></div>
-
-<script>
-// STOP ALT HVIS PASSWORD ER FORKERT
-if (!authorized) {
-  throw new Error("Ikke autoriseret");
+if (userInput !== password) {
+  document.body.innerHTML = "<h1>Forkert kode</h1>";
+} else {
+  authorized = true;
 }
+</script>
+
+<h1>🐎 Foderstatus</h1>
+
+<div class="topbar">
+  <button onclick="refreshPage()">🔄 Opdater</button>
+</div>
+
+<div id="output">
+  <div class="loading">Indlæser data...</div>
+</div>
+
+<script>
+if (!authorized) throw new Error("Ikke autoriseret");
 
 const apiURL = "https://script.google.com/macros/s/AKfycbzrQzGRI-N-TbykmHMKXVYWmhKK1Uh0_BdTXFd6Yd0m_pLCTyMAOL7oeSWO9DIpHFKQ7A/exec";
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdGPn-TFcWLdSdzcxEecrdwIlcJqYYQQ_BX5txpXojqSQn7zPers_3tFtSS2wWdBPQdADeBua4MFj7/pub?output=csv";
+
+function refreshPage() {
+  location.reload();
+}
 
 function updateStatus(navn, dag, status, cellElement) {
   fetch(apiURL, {
@@ -106,9 +170,9 @@ function updateStatus(navn, dag, status, cellElement) {
   .then(result => {
     if (result === "OK") {
       cellElement.textContent = status;
-      cellElement.className = status === "OK" ? "ok" : "not-ok";
+      cellElement.className = "status " + (status === "OK" ? "ok" : "not-ok");
     } else {
-      alert("Fejl: Kunne ikke opdatere i Google Sheets");
+      alert("Fejl ved opdatering");
     }
   });
 }
@@ -116,7 +180,7 @@ function updateStatus(navn, dag, status, cellElement) {
 fetch(sheetURL)
   .then(res => res.text())
   .then(csv => {
-    const lines = csv.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+    const lines = csv.split("\n").map(l => l.trim()).filter(l => l);
     const sep = lines[0].includes(";") ? ";" : ",";
     const rows = lines.map(r => r.split(sep));
 
@@ -131,13 +195,14 @@ fetch(sheetURL)
     };
 
     const container = document.getElementById("output");
+    container.innerHTML = "";
 
     Object.keys(persons).forEach(person => {
-      const section = document.createElement("div");
-      section.innerHTML = `<h2>${person}</h2>`;
+      const card = document.createElement("div");
+      card.className = "card";
 
-      const table = document.createElement("table");
-      let html = `<tr><th>Dag</th><th>Status</th><th>Ændr</th></tr>`;
+      let html = `<h2>${person}</h2>`;
+      html += `<table><tr><th>Dag</th><th>Status</th><th>Ændr</th></tr>`;
 
       days.forEach((day, i) => {
         const status = persons[person][i].trim();
@@ -146,7 +211,7 @@ fetch(sheetURL)
         html += `
           <tr>
             <td>${day}</td>
-            <td class="${cls}" id="${person}-${day}">${status}</td>
+            <td class="status ${cls}" id="${person}-${day}">${status}</td>
             <td>
               <select onchange="updateStatus('${person}','${day}', this.value, document.getElementById('${person}-${day}'))">
                 <option value="OK" ${status === "OK" ? "selected" : ""}>OK</option>
@@ -157,13 +222,13 @@ fetch(sheetURL)
         `;
       });
 
-      table.innerHTML = html;
-      section.appendChild(table);
-      container.appendChild(section);
+      html += "</table>";
+      card.innerHTML = html;
+      container.appendChild(card);
     });
   })
   .catch(err => {
-    document.getElementById("output").innerText = "Der skete en fejl: " + err;
+    document.getElementById("output").innerHTML = "Fejl: " + err;
   });
 </script>
 
