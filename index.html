@@ -65,6 +65,25 @@
     authorized = true;
   }
 </script>
+<!-- Placer dette lige under <h1>Foderstatus</h1> -->
+<button id="refreshBtn" onclick="refreshPage()" style="display:none; margin-bottom:12px; padding:8px 12px; font-size:16px;">
+  Opdater siden
+</button>
+
+<script>
+  // Vis knappen kun hvis autoriseret
+  if (authorized) {
+    document.getElementById('refreshBtn').style.display = 'inline-block';
+  }
+
+  // Funktion til at genindlæse siden
+  function refreshPage() {
+    // Simpel genindlæsning
+    location.reload();
+    // Alternativt: force reload fra server (cache bypass)
+    // location.reload(true); // ikke anbefalet i moderne browsere
+  }
+</script>
 
 <h1>Foderstatus</h1>
 <div id="output"></div>
